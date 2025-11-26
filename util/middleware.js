@@ -12,6 +12,8 @@ const errorHandler = (error, request, response, next) => {
       .send({ error: "Validation failed, parameters missing" });
   } else if (error.name === "BlogNotFoundError") {
     return response.status(404).send({ error: error.message });
+  } else if (error.name === "UsergNotFoundError") {
+    return response.status(404).send({ error: error.message });
   } else {
     return response.status(400).send({ error: "Unknown error" });
   }
