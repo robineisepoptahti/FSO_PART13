@@ -7,13 +7,13 @@ router.get("/", async (req, res) => {
   res.json(blogs);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
     const blog = await Blog.create(req.body);
     console.log(JSON.stringify(blog));
     return res.status(201).json(blog);
   } catch (error) {
-    return res.status(400).json({ error });
+    next(error);
   }
 });
 
@@ -28,15 +28,21 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
-  const blog = await Blog.findByPk(req.params.id);
-  if (blog) {
-    console.log(blog);
-    blog.likes = req.body.likes;
-    await blog.save();
-    res.status(200).json(blog);
-  } else {
-    res.status(404).end();
+router.put("/:id", async (req, res, next) => {
+  try {
+    const blog = await Blog.findByPk(req.params.id);
+    if (blog) {
+      console.log(blog);
+      blog.likes = req.body.likes;
+      await blog.save();
+      res.status(200).json(blog);
+    } else {
+      const error = new Error("Blog not found");
+      error.name = "BlogNotFoundError";
+      next(error);
+    }
+  } catch (error) {
+    next(error);
   }
 });
 
