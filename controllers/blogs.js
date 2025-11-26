@@ -1,5 +1,6 @@
 const router = require("express").Router();
-const { Blog } = require("../models/index");
+const { Blog, User } = require("../models/index");
+const { tokenExtractor } = require("../util/middleware");
 
 router.get("/", async (req, res) => {
   const blogs = await Blog.findAll();
@@ -7,9 +8,10 @@ router.get("/", async (req, res) => {
   res.json(blogs);
 });
 
-router.post("/", async (req, res, next) => {
+router.post("/", tokenExtractor, async (req, res, next) => {
   try {
-    const blog = await Blog.create(req.body);
+    const user = await User.findOne({ where: { id: req.decodedToken.id } });
+    const blog = await Blog.create({ ...req.body, userId: user.id });
     console.log(JSON.stringify(blog));
     return res.status(201).json(blog);
   } catch (error) {
