@@ -9,7 +9,7 @@ const errorHandler = (error, request, response, next) => {
   if (error.name === "SequelizeValidationError") {
     return response
       .status(400)
-      .send({ error: "Validation failed, parameters missing" });
+      .send(error.errors.map((e) => e.message).join(", "));
   } else if (error.name === "BlogNotFoundError") {
     return response.status(404).send({ error: error.message });
   } else if (error.name === "UsergNotFoundError") {
