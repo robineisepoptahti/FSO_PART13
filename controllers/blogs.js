@@ -3,7 +3,12 @@ const { Blog, User } = require("../models/index");
 const { tokenExtractor } = require("../util/middleware");
 
 router.get("/", async (req, res) => {
-  const blogs = await Blog.findAll();
+  const blogs = await Blog.findAll({
+    include: {
+      model: User,
+      attributes: { exclude: ["id"] },
+    },
+  });
   console.log(JSON.stringify(blogs));
   res.json(blogs);
 });
@@ -19,9 +24,9 @@ router.post("/", tokenExtractor, async (req, res, next) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", tokenExtractor, async (req, res) => {
   const blog = await Blog.findByPk(req.params.id);
-  if (blog) {
+  if (blog && blog.userId === req.decodedToken.id) {
     console.log(blog);
     await blog.destroy();
     res.status(204).json(blog);
