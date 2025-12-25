@@ -17,6 +17,7 @@ router.get("/", async (req, res) => {
       attributes: { exclude: ["id"] },
     },
     where,
+    order: [["likes", "DESC"]],
   });
   console.log(JSON.stringify(blogs));
   res.json(blogs);
