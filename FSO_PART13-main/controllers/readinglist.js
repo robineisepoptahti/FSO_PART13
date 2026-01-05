@@ -13,4 +13,20 @@ router.post("/", tokenExtractor, async (req, res, next) => {
   }
 });
 
+router.put("/:id", tokenExtractor, async (req, res, next) => {
+  try {
+    const blog = await Readlist.findByPk(req.params.id);
+    if (blog && blog.userId === req.decodedToken.id) {
+      blog.read = req.body.read;
+      await blog.save();
+      res.json(blog);
+    } else {
+      console.log("No blog found with id belnging to the user");
+      res.json(blog);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
