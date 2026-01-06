@@ -1,5 +1,6 @@
 const { SECRET } = require("./config");
 const jwt = require("jsonwebtoken");
+const { Session, User } = require("../models/index");
 
 const errorHandler = (error, request, response, next) => {
   console.log("in Error handler");
@@ -22,12 +23,31 @@ const errorHandler = (error, request, response, next) => {
   }
 };
 
-const tokenExtractor = (req, res, next) => {
+const tokenExtractor = async (req, res, next) => {
   const authorization = req.get("authorization");
   if (authorization && authorization.toLowerCase().startsWith("bearer ")) {
     try {
       console.log(authorization.substring(7));
-      req.decodedToken = jwt.verify(authorization.substring(7), SECRET);
+      const parsed = authorization.substring(7);
+      req.decodedToken = jwt.verify(parsed, SECRET);
+      const session = await Session.findOne({
+        where: { token: parsed },
+        include: {
+          model: User,
+        },
+      });
+      if (!session) {
+        return res
+          .status(401)
+          .json({ error: "No active session found for the token" });
+      }
+      console.log(JSON.stringify(session));
+      if (session.dataValues.user.disabled) {
+        await session.destroy();
+        return res
+          .status(401)
+          .json({ error: "User disabled. Logging user out" });
+      }
     } catch (error) {
       console.log(error);
       return res.status(401).json({ error: "token invalid" });

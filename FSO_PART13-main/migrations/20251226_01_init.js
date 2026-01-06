@@ -9,7 +9,6 @@ module.exports = {
   down: async ({ context: queryInterface }) => {
     await queryInterface.removeColumn("blogs", "year", {
       type: DataTypes.INTEGER,
-      allowNull: false,
     });
   },
 };
